@@ -119,7 +119,9 @@
 | GET | `/prayer/coverage` | 168 cells `{weekdayUtc, hourUtc, count}` (frontend shifts to local) | public |
 | POST | `/prayer/commitments` | `{fullName, email?, phone?, hub, timezone, localWeekday, localHour, consent}` → confirmation + `.ics` + manage link | public |
 | GET/DELETE | `/manage/prayer/commitments[/:id]` | via magic link | token |
-| GET | `/prayer/watches` · POST `/prayer/watches/:id/signup` | quarterly 3-h watches | public |
+| GET | `/prayer/watches` | open, published watches: `[{slug, title, description, bannerImage, startsAt, endsAt, roundCount, signupCount}]` | public |
+| GET | `/prayer/watches/{slug}` | + `rounds: [{id, label, isRequired, slots: [{id, startsAt, endsAt, capacity, taken, isFull}]}]` | public |
+| POST | `/prayer/watches/{slug}/signups` | `{firstName, lastName, phone (E.164), email, hub, timezone, slotIds[], consent}` → one shift per required round; 409 `shift-full` / `already-signed-up`; 422 `shift-required` / `one-shift-per-round` | public |
 | GET | `/prayer/requests?status=published` | wall | public |
 | POST | `/prayer/requests` | `{title, body, submitterName?, submitterEmail?, isPublic}` → PENDING | public |
 | POST | `/prayer/requests/:id/prayed` | +1, limited 1/device/24 h → `{prayedCount}` | public |

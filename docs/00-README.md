@@ -16,7 +16,9 @@
 | 10 | [Dev Guide](10-dev-guide.md) | Setup, git, code standards, Definition of Done, runbook, handover pack |
 | 11 | [Open Questions](11-open-questions.md) | Decisions needed from JLICI (by 28 Nov) |
 | 12 | [Decision Log](12-decision-log.md) | Changes of direction and why (FastAPI backend, retained illustrations, time zones) |
-| 13 | [Sprint 1 Report](13-sprint-1-report.md) | What Sprint 1 delivered toward Milestone 1, and how to review it |
+| 13 | [Sprint 1 Report](13-sprint-1-report.md) | What Sprint 1 delivered toward Milestone 1, how to review it, and the board's approval form |
+| 14 | [Deployment Guide](14-deployment.md) | Accounts needed, staging preview steps, production cut-over |
+| — | [Wireframes](wireframes/milestone-1-wireframes.html) | Low-fi layouts for About, Missionaries, Transit Housing, Contact and the staff dashboard |
 
 **Two client additions on 24 Nov 2026 are built into all documents:**
 1. **Missionary Needs Board:** Angel Tree model (angels.tcniganmu.org), made **contributory** (many partners fund one need).

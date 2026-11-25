@@ -33,15 +33,26 @@ Brand colours from the deck, with the role each plays and whether it passes cont
 - Progress bars: sky fill on an indigo-50 track. Funded = gold.
 - Dark mode: not in MVP (planned in tokens only).
 
-## 3. Typography
+## 3. Typography (v3, 25 Nov 2026: total redesign, see decision D-005)
 
 | Use | Font | Notes |
 |-----|------|-------|
-| Display / H1–H2 | **Cormorant Garamond** (600) or **Cinzel** for short small-caps lines | Echoes the serif wordmark. Use small caps sparingly |
-| Body, UI, numbers | **Inter** (400/500/600) | Excellent on low-res Android screens. Tabular numbers for amounts |
-| Scripture quotes | Cormorant Garamond italic | |
+| Headlines, body, UI, numbers | **Outfit** (400–600) | Clean geometric sans. Headlines medium weight, tight tracking. Tabular numbers for amounts |
+| Accent words in headlines | **Playfair Display** italic (600) | One or two words per headline only, e.g. "Labouring together, *for souls*". Written as `<em>` inside h1–h3 |
+| Scripture quotes | Outfit, with an aqua left rule | |
 
-Scale (mobile → desktop): H1 32→56, H2 26→40, H3 20→28, body 16→18, small 14. Line height 1.5 body, 1.15 display. Self-host fonts through `next/font` (no Google CDN request, no layout shift).
+Scale (mobile → desktop): H1 42→68, H2 36→48, H3 22→26, body 16→18, small 13–14. Self-host fonts through `next/font` (no Google CDN request, no layout shift).
+
+## 3a. Layout language (v3)
+
+Taken from the client's reference (25 Nov 2026), in JLICI colours:
+- **Hero frame:** every page opens with a rounded (32 px) frame. On Home it holds a full-bleed photo under an indigo gradient; inner pages use plain night indigo (`#14145A`).
+- **Floating white nav bar** inside the frame: logo, links with an aqua "active" pill, phone number, dark "Give" pill with an aqua arrow circle.
+- **Pill buttons with an arrow circle** (`ButtonLink arrow`). Primary on dark = aqua pill; primary on light = night pill.
+- **Eyebrow labels:** small uppercase text with a coloured dot ("• ABOUT JLICI").
+- **Glass stats card** on the hero; **trust strip** below it (the live prayer hubs stand in for partner logos).
+- **Photo-card carousel** for "ways to get involved"; **bento step cards** for "How it works".
+- Photography: the current photos are **placeholders** from the old site (some show other charities' branding) and must be replaced with JLICI field photos before launch.
 
 ## 4. Layout and components
 
