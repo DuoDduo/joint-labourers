@@ -8,11 +8,21 @@ import { TopPanel } from "@/components/layout/TopPanel";
 import { GivePanel } from "@/components/needs/GivePanel";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { categoryLabels } from "@/config/site";
-import { apiGetOrNull } from "@/lib/api/client";
-import type { NeedDetail } from "@/lib/api/types";
+import { apiGet, apiGetOrNull } from "@/lib/api/client";
+import type { NeedCard, NeedDetail, Page } from "@/lib/api/types";
+import { STATIC_EXPORT } from "@/lib/static";
 import { daysLeft, formatMinor } from "@/lib/money/format";
 
 type Params = { code: string };
+
+// The static preview pre-renders every sample need; the live site renders on demand.
+export async function generateStaticParams(): Promise<Params[]> {
+  if (!STATIC_EXPORT) return [];
+  const lists = await Promise.all(
+    ["live", "fulfilled"].map((status) => apiGet<Page<NeedCard>>(`/needs?status=${status}&pageSize=50`)),
+  );
+  return lists.flatMap((l) => l.data.map((n) => ({ code: n.code })));
+}
 
 async function load(code: string) {
   return apiGetOrNull<NeedDetail>(`/needs/${encodeURIComponent(code)}`, { tags: [`need:${code.toUpperCase()}`] });

@@ -8,11 +8,19 @@ import { PageIntro, TopPanel } from "@/components/layout/TopPanel";
 import { WatchSignupForm } from "@/components/prayer/WatchSignupForm";
 import { ButtonLink } from "@/components/ui/Button";
 import { apiGet, apiGetOrNull } from "@/lib/api/client";
-import type { PrayerHubConfig, WatchDetail } from "@/lib/api/types";
+import type { PrayerHubConfig, WatchDetail, WatchSummary } from "@/lib/api/types";
+import { STATIC_EXPORT } from "@/lib/static";
 import { DEFAULT_HUBS } from "@/lib/time/hubs";
 import { formatRange } from "@/lib/time/watch";
 
 type Params = { slug: string };
+
+// The static preview pre-renders every published watch; the live site renders on demand.
+export async function generateStaticParams(): Promise<Params[]> {
+  if (!STATIC_EXPORT) return [];
+  const watches = await apiGet<WatchSummary[]>("/prayer/watches");
+  return watches.map((w) => ({ slug: w.slug }));
+}
 
 async function load(slug: string) {
   return apiGetOrNull<WatchDetail>(`/prayer/watches/${encodeURIComponent(slug)}`, { revalidate: 30 });

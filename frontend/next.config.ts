@@ -9,7 +9,18 @@ if (noindex && process.env.VERCEL_ENV === "production") {
   throw new Error("NEXT_PUBLIC_NOINDEX=true is not allowed in production. Remove it from the production env.");
 }
 
-const config: NextConfig = {
+// Static preview for GitHub Pages (see .github/workflows/pages.yml).
+const staticExport = process.env.STATIC_EXPORT === "true";
+
+const staticConfig: NextConfig = {
+  reactStrictMode: true,
+  output: "export",
+  basePath: process.env.NEXT_PUBLIC_BASE_PATH || undefined,
+  trailingSlash: true,
+  images: { loader: "custom", loaderFile: "./src/lib/image-loader.ts" },
+};
+
+const config: NextConfig = staticExport ? staticConfig : {
   reactStrictMode: true,
   poweredByHeader: false,
   images: { formats: ["image/avif", "image/webp"] },

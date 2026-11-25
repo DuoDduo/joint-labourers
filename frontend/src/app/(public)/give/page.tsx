@@ -5,6 +5,7 @@ import { ScriptureCard } from "@/components/illustrations/ScriptureCard";
 import { PageIntro, TopPanel } from "@/components/layout/TopPanel";
 import { illustration } from "@/config/illustrations";
 import { apiGet } from "@/lib/api/client";
+import { readSearch } from "@/lib/static";
 
 export const metadata: Metadata = {
   title: "Give",
@@ -14,7 +15,7 @@ export const metadata: Metadata = {
 type Breakdown = { data: { items: { label: string; percent: number }[]; note?: string } };
 
 export default async function GivePage({ searchParams }: { searchParams: Promise<{ need?: string; amount?: string }> }) {
-  const sp = await searchParams;
+  const sp = await readSearch(searchParams);
   const needCode = sp.need && /^JLN-\d{4,}$/i.test(sp.need) ? sp.need.toUpperCase() : undefined;
   const amount = sp.amount && /^\d{1,15}$/.test(sp.amount) ? sp.amount : undefined;
   const breakdown = await apiGet<Breakdown>("/content/give.money_breakdown", { revalidate: 3600 }).catch(() => null);

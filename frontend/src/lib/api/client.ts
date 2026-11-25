@@ -1,3 +1,4 @@
+import { STATIC_EXPORT } from "@/lib/static";
 import type { Problem } from "./types";
 
 const SERVER_BASE =
@@ -51,6 +52,13 @@ export async function apiGetOrNull<T>(
 
 /** Browser-side request (forms). Sends cookies for signed-in users. */
 export async function apiSend<T>(path: string, method: "POST" | "PATCH", body: unknown): Promise<T> {
+  if (STATIC_EXPORT) {
+    throw new ApiError(503, {
+      type: "about:blank",
+      title: "Sign-ups are switched off in this preview. They will work on the live site.",
+      status: 503,
+    });
+  }
   const res = await fetch(`${BROWSER_BASE}${path}`, {
     method,
     credentials: "include",

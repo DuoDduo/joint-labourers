@@ -8,6 +8,7 @@ import { NeedCard } from "@/components/needs/NeedCard";
 import { categoryLabels } from "@/config/site";
 import { illustration } from "@/config/illustrations";
 import { apiGet } from "@/lib/api/client";
+import { readSearch } from "@/lib/static";
 import type { ImpactStats, NeedCard as Need, Page, Region } from "@/lib/api/types";
 
 export const metadata: Metadata = {
@@ -18,7 +19,7 @@ export const metadata: Metadata = {
 type Search = { category?: string; region?: string; almostThere?: string; status?: string };
 
 export default async function NeedsPage({ searchParams }: { searchParams: Promise<Search> }) {
-  const sp = await searchParams;
+  const sp = await readSearch(searchParams);
   const status = sp.status === "fulfilled" ? "fulfilled" : "live";
   const qs = new URLSearchParams({ status, pageSize: "24" });
   if (sp.category) qs.set("category", sp.category);

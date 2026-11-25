@@ -1,0 +1,82 @@
+name: Preview site
+
+# Publishes a static design preview of the public site to GitHub Pages.
+# The API runs inside the job with the sample data, the pages are rendered once,
+# and only the resulting HTML/CSS/images are published. Forms are switched off.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: sqlite+aiosqlite:///./preview.db
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - run: uv python install 3.12
+        working-directory: backend
+      - run: uv sync --frozen
+        working-directory: backend
+      - name: Database with sample data
+        working-directory: backend
+        run: uv run alembic upgrade head && uv run python -m app.seed --demo
+      - name: Start API
+        working-directory: backend
+        run: |
+          nohup uv run uvicorn app.main:app --port 4000 > api.log 2>&1 &
+          for i in $(seq 1 30); do
+            curl -fs http://127.0.0.1:4000/api/v1/health && exit 0
+            sleep 1
+          done
+          cat api.log
+          exit 1
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+        working-directory: frontend
+      - name: Build static site
+        working-directory: frontend
+        env:
+          STATIC_EXPORT: "true"
+          NEXT_PUBLIC_STATIC_EXPORT: "true"
+          NEXT_PUBLIC_BASE_PATH: /${{ github.event.repository.name }}
+          NEXT_PUBLIC_NOINDEX: "true"
+          API_URL: http://127.0.0.1:4000/api/v1
+        run: pnpm build && touch out/.nojekyll
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: frontend/out
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
