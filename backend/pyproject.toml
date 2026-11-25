@@ -1,0 +1,51 @@
+[project]
+name = "jlici-api"
+version = "0.1.0"
+description = "JLICI Digital Platform: backend API (FastAPI)"
+requires-python = ">=3.12"
+dependencies = [
+  "fastapi>=0.115",
+  "uvicorn[standard]>=0.32",
+  "sqlalchemy[asyncio]>=2.0.36",
+  "asyncpg>=0.30",
+  "aiosqlite>=0.20",
+  "alembic>=1.14",
+  "pydantic>=2.9",
+  "pydantic-settings>=2.6",
+  "email-validator>=2.2",
+  "pyjwt>=2.10",
+  "argon2-cffi>=23.1",
+  "pyotp>=2.9",
+  "cryptography>=43",
+  "httpx>=0.28",
+  "arq>=0.26",
+  "python-multipart>=0.0.17",
+  "tzdata>=2024.2",
+]
+
+[dependency-groups]
+dev = [
+  "pytest>=8.3",
+  "pytest-asyncio>=0.24",
+  "ruff>=0.8",
+  "mypy>=1.13",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "session"
+asyncio_default_test_loop_scope = "session"
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+extend-exclude = ["alembic/versions"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "S", "ASYNC"]
+ignore = ["S101", "B008", "UP046"]  # UP046: keep Generic[T] for pydantic models
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S105", "S106"]
+"app/seed.py" = ["S105", "S311"]

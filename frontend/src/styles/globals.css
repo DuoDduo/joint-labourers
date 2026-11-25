@@ -1,0 +1,69 @@
+@import "tailwindcss";
+
+/* ── JLICI design tokens (from the logo deck; see docs/05-ui-ux-brief.md) ──
+   Contrast rules: aqua (#00CCFF) is never used for text on white;
+   orange text/buttons with white text use give-700. */
+@theme {
+  --color-brand-50: #eeeefd;
+  --color-brand-100: #dcdcfb;
+  --color-brand-200: #b9b9f7;
+  --color-brand: #3d3deb;
+  --color-brand-700: #2b2bc0;
+  --color-brand-900: #1e1e7a;
+
+  --color-aqua-50: #e6faff;
+  --color-aqua-100: #ccf5ff;
+  --color-aqua-200: #99ebff;
+  --color-aqua: #00ccff;
+
+  --color-give-50: #fdf0e7;
+  --color-give: #e66d22;
+  --color-give-700: #c2531a;
+
+  --color-gold: #f2cf3b; /* placeholder until JLICI confirms the yellow hex */
+  --color-gold-50: #fdf8e1;
+
+  --color-ink-900: #1f1f29;
+  --color-ink-600: #606062;
+  --color-ink-500: #727376;
+  --color-line: #e6e7ef;
+  --color-surface: #f7f8fc;
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-cormorant), Georgia, "Times New Roman", serif;
+
+  --radius-card: 0.75rem;
+  --shadow-card: 0 1px 2px rgb(30 30 122 / 0.06), 0 8px 24px rgb(30 30 122 / 0.06);
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-white font-sans text-ink-600 antialiased;
+  }
+  h1,
+  h2,
+  h3 {
+    @apply font-display text-ink-900;
+    text-wrap: balance;
+  }
+  :focus-visible {
+    outline: 3px solid var(--color-aqua);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

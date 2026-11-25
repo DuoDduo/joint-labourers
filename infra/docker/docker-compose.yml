@@ -1,0 +1,18 @@
+# Local development services. Run: docker compose -f infra/docker/docker-compose.yml up -d
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: jlici
+      POSTGRES_PASSWORD: jlici
+      POSTGRES_DB: jlici
+    ports: ["5432:5432"]
+    volumes: [pgdata:/var/lib/postgresql/data]
+  redis:
+    image: redis:7-alpine
+    ports: ["6379:6379"]
+  mailpit:            # catches all local emails at http://localhost:8025
+    image: axllent/mailpit
+    ports: ["1025:1025", "8025:8025"]
+volumes:
+  pgdata:
