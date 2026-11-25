@@ -33,7 +33,9 @@ from app.models.prayer import (
     PrayerHubConfig,
     PrayerRequest,
     PrayerWatch,
+    PrayerWatchRound,
     PrayerWatchSignup,
+    PrayerWatchSlot,
 )
 
 __all__ = [
@@ -68,7 +70,9 @@ __all__ = [
     "PrayerHubConfig",
     "PrayerRequest",
     "PrayerWatch",
+    "PrayerWatchRound",
     "PrayerWatchSignup",
+    "PrayerWatchSlot",
     "RecurringGift",
     "RefreshToken",
     "Region",

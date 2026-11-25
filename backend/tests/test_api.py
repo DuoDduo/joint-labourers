@@ -163,6 +163,76 @@ async def test_prayer_hubs_and_commitment(client: AsyncClient) -> None:
     assert sum(c["count"] for c in cells) > 0
 
 
+# ── prayer watches ───────────────────────────────────────────────────────────
+WATCH_PERSON = {
+    "firstName": "Esther",
+    "lastName": "K.",
+    "phone": "+2348012345678",
+    "email": "esther@example.org",
+    "hub": "LAGOS",
+    "timezone": "Africa/Lagos",
+    "consent": True,
+}
+CHAIN = "/prayer/watches/labourers-fast-feb-mar-2027"
+CYCLE = "/prayer/watches/quarterly-24-hour-watch-q1-2027"
+
+
+async def test_watch_list_and_detail(client: AsyncClient) -> None:
+    slugs = [w["slug"] for w in (await client.get("/prayer/watches")).json()]
+    assert "quarterly-24-hour-watch-q1-2027" in slugs
+    detail = (await client.get(CYCLE)).json()
+    assert len(detail["rounds"]) == 1
+    assert len(detail["rounds"][0]["slots"]) == 8
+    chain = (await client.get(CHAIN)).json()
+    assert [r["label"] for r in chain["rounds"]] == ["February fast", "March fast"]
+    # Times always carry a UTC marker, so browsers never read them as local time
+    first = detail["rounds"][0]["slots"][0]["startsAt"]
+    assert first.endswith("Z") or first.endswith("+00:00"), first
+    assert (await client.get("/prayer/watches/nope")).status_code == 404
+
+
+async def test_watch_signup_rules(client: AsyncClient) -> None:
+    feb, mar = (await client.get(CHAIN)).json()["rounds"]
+    url = f"{CHAIN}/signups"
+
+    # A shift is needed in every required round
+    r = await client.post(url, json={**WATCH_PERSON, "slotIds": [feb["slots"][0]["id"]]})
+    assert r.status_code == 422
+    assert r.json()["type"].endswith("shift-required")
+    # Only one shift per round
+    two = [feb["slots"][0]["id"], feb["slots"][1]["id"]]
+    r = await client.post(url, json={**WATCH_PERSON, "slotIds": two})
+    assert r.status_code == 422
+    assert r.json()["type"].endswith("one-shift-per-round")
+    # Phone must be in international format
+    pair = [feb["slots"][0]["id"], mar["slots"][0]["id"]]
+    bad = {**WATCH_PERSON, "phone": "08012345678", "slotIds": pair}
+    assert (await client.post(url, json=bad)).status_code == 422
+
+    picks = [feb["slots"][2]["id"], mar["slots"][4]["id"]]
+    ok = await client.post(url, json={**WATCH_PERSON, "slotIds": picks})
+    assert ok.status_code == 201, ok.text
+    assert [s["roundLabel"] for s in ok.json()["slots"]] == ["February fast", "March fast"]
+    others = [feb["slots"][3]["id"], mar["slots"][5]["id"]]
+    assert (await client.post(url, json={**WATCH_PERSON, "slotIds": others})).status_code == 409
+
+    after = (await client.get(CHAIN)).json()
+    assert after["rounds"][0]["slots"][2]["taken"] == 1
+
+
+async def test_watch_shift_capacity(client: AsyncClient) -> None:
+    slot = (await client.get(CYCLE)).json()["rounds"][0]["slots"][0]
+    url = f"{CYCLE}/signups"
+    for i in range(slot["capacity"]):
+        body = {**WATCH_PERSON, "email": f"cap{i}@example.org", "slotIds": [slot["id"]]}
+        r = await client.post(url, json=body)
+        assert r.status_code == 201, r.text
+    late = {**WATCH_PERSON, "email": "late@example.org", "slotIds": [slot["id"]]}
+    full = await client.post(url, json=late)
+    assert full.status_code == 409
+    assert full.json()["type"].endswith("shift-full")
+
+
 async def test_impact_stats(client: AsyncClient) -> None:
     s = (await client.get("/stats/impact")).json()
     assert s["missionariesSupported"] >= 4

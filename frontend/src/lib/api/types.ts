@@ -85,6 +85,36 @@ export interface CoverageCell {
   count: number;
 }
 
+export interface WatchSummary {
+  slug: string;
+  title: string;
+  description: string | null;
+  bannerImage: string | null;
+  startsAt: string;
+  endsAt: string;
+  roundCount: number;
+  signupCount: number;
+}
+
+export interface WatchSlot {
+  id: string;
+  startsAt: string;
+  endsAt: string;
+  capacity: number | null;
+  taken: number;
+  isFull: boolean;
+}
+
+export interface WatchDetail extends WatchSummary {
+  rounds: { id: string; label: string; isRequired: boolean; slots: WatchSlot[] }[];
+}
+
+export interface WatchSignupResult {
+  watchTitle: string;
+  slots: { roundLabel: string; startsAt: string; endsAt: string }[];
+  meetingUrl: string | null;
+}
+
 export interface Problem {
   type: string;
   title: string;

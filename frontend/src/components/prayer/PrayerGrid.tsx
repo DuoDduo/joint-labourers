@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import clsx from "clsx";
 
 import { Button } from "@/components/ui/Button";
@@ -198,10 +198,46 @@ function ClaimForm({
 }) {
   const [state, setState] = useState<"idle" | "saving" | "done">("idle");
   const [error, setError] = useState<string | null>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+  const closeRef = useRef(onClose);
+  closeRef.current = onClose;
+
+  // Focus the first field on open, close on Escape, keep Tab inside the dialog,
+  // and give focus back to the hour that opened it.
+  useEffect(() => {
+    const opener = document.activeElement as HTMLElement | null;
+    formRef.current?.querySelector<HTMLElement>("input, select, button")?.focus();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeRef.current();
+      if (e.key !== "Tab" || !formRef.current) return;
+      const items = formRef.current.querySelectorAll<HTMLElement>("input, select, button:not([disabled])");
+      const first = items[0];
+      const last = items[items.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last?.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first?.focus();
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      opener?.focus();
+    };
+  }, []);
 
   return (
-    <div role="dialog" aria-modal="true" aria-labelledby="claim-title" className="fixed inset-0 z-50 flex items-end justify-center bg-ink-900/50 p-4 sm:items-center">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="claim-title"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-ink-900/50 p-4 sm:items-center"
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+    >
       <form
+        ref={formRef}
         className="w-full max-w-md space-y-4 rounded-2xl bg-white p-6"
         onSubmit={async (e) => {
           e.preventDefault();

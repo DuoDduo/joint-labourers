@@ -2,7 +2,7 @@
 
 from datetime import datetime
 
-from pydantic import Field
+from pydantic import EmailStr, Field
 
 from app.models.enums import Currency, NeedCategory, NeedStatus, NeedUrgency, PrayerHub
 from app.schemas.common import Minor, Schema
@@ -109,6 +109,60 @@ class CommitmentIn(Schema):
     local_weekday: int = Field(ge=0, le=6)
     local_hour: int = Field(ge=0, le=23)
     consent: bool
+
+
+class WatchSummaryOut(Schema):
+    slug: str
+    title: str
+    description: str | None
+    banner_image: str | None
+    starts_at: datetime
+    ends_at: datetime
+    round_count: int
+    signup_count: int
+
+
+class WatchSlotOut(Schema):
+    id: str
+    starts_at: datetime
+    ends_at: datetime
+    capacity: int | None
+    taken: int
+    is_full: bool
+
+
+class WatchRoundOut(Schema):
+    id: str
+    label: str
+    is_required: bool
+    slots: list[WatchSlotOut]
+
+
+class WatchDetailOut(WatchSummaryOut):
+    rounds: list[WatchRoundOut]
+
+
+class WatchSignupIn(Schema):
+    first_name: str = Field(min_length=1, max_length=80)
+    last_name: str = Field(min_length=1, max_length=80)
+    phone: str = Field(pattern=r"^\+[1-9]\d{6,14}$")  # E.164, e.g. +2348012345678
+    email: EmailStr
+    hub: PrayerHub
+    timezone: str = Field(max_length=64)
+    slot_ids: list[str] = Field(min_length=1, max_length=20)
+    consent: bool
+
+
+class WatchSignupSlotOut(Schema):
+    round_label: str
+    starts_at: datetime
+    ends_at: datetime
+
+
+class WatchSignupOut(Schema):
+    watch_title: str
+    slots: list[WatchSignupSlotOut]
+    meeting_url: str | None
 
 
 class CommitmentOut(Schema):

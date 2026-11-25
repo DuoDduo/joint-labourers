@@ -32,7 +32,14 @@ from app.models.field import Missionary, Region
 from app.models.giving import PartnerTierPrice
 from app.models.identity import User
 from app.models.needs import Need, NeedStatusHistory
-from app.models.prayer import Intercessor, PrayerCommitment, PrayerHubConfig
+from app.models.prayer import (
+    Intercessor,
+    PrayerCommitment,
+    PrayerHubConfig,
+    PrayerWatch,
+    PrayerWatchRound,
+    PrayerWatchSlot,
+)
 from app.services.prayer_time import DEFAULT_HUBS, local_to_utc_slot
 
 REGIONS = [
@@ -387,7 +394,65 @@ async def seed_demo(session: AsyncSession) -> None:
                         hour_utc=uh,
                     )
                 )
+    await _seed_watches(session)
     await session.commit()
+
+
+async def _seed_watches(session: AsyncSession) -> None:
+    """Two SAMPLE watches: the quarterly 24-hour cycle and a two-month chain fast."""
+    if await session.scalar(select(PrayerWatch.id).limit(1)):
+        return
+
+    cycle_start = datetime(2027, 1, 30, tzinfo=UTC)  # Saturday
+    cycle = PrayerWatch(
+        slug="quarterly-24-hour-watch-q1-2027",
+        title="Quarterly 24-Hour Prayer Watch",
+        description=(
+            "Sample watch. Eight 3-hour shifts carry prayer for the nations and our labourers "
+            "around the world in one day: Sydney to Lagos to New York to Vancouver."
+        ),
+        banner_image="/images/illustrations/matthew-26-41-watch.jpg",
+        starts_at=cycle_start,
+        ends_at=cycle_start + timedelta(hours=24),
+        is_published=True,
+    )
+    session.add(cycle)
+    await session.flush()
+    rnd = PrayerWatchRound(watch_id=cycle.id, label="Your 3-hour shift", sort_order=0)
+    session.add(rnd)
+    await session.flush()
+    for i in range(8):
+        start = cycle_start + timedelta(hours=3 * i)
+        session.add(
+            PrayerWatchSlot(
+                round_id=rnd.id, starts_at=start, ends_at=start + timedelta(hours=3), capacity=12
+            )
+        )
+
+    chain = PrayerWatch(
+        slug="labourers-fast-feb-mar-2027",
+        title="Labourers' Fast: February and March",
+        description=(
+            "Sample watch. Pick one 3-day fast in each month so that, together, we cover every "
+            "day of February and March in prayer for missionaries in the field."
+        ),
+        banner_image="/images/illustrations/isaiah-59-15.jpg",
+        starts_at=datetime(2027, 2, 1, tzinfo=UTC),
+        ends_at=datetime(2027, 3, 31, tzinfo=UTC),
+        is_published=True,
+    )
+    session.add(chain)
+    await session.flush()
+    months = [("February fast", 2, 27), ("March fast", 3, 30)]
+    for order, (label, month, last_day) in enumerate(months):
+        r = PrayerWatchRound(watch_id=chain.id, label=label, sort_order=order)
+        session.add(r)
+        await session.flush()
+        for day in range(1, last_day + 1, 3):
+            start = datetime(2027, month, day, tzinfo=UTC)
+            session.add(
+                PrayerWatchSlot(round_id=r.id, starts_at=start, ends_at=start + timedelta(days=3))
+            )
 
 
 async def main(demo: bool) -> None:
