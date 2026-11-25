@@ -13,7 +13,7 @@ export const mainNav = [
   { href: "/needs", label: "Needs" },
   { href: "/pray", label: "Pray" },
   { href: "/gallery", label: "Gallery" },
-  { href: "/about", label: "About", soon: true },
+  { href: "/about", label: "About" },
   { href: "/missionaries", label: "Missionaries", soon: true },
   { href: "/transit-housing", label: "Transit Housing", soon: true },
   { href: "/contact", label: "Contact", soon: true },

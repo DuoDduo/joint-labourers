@@ -1,15 +1,16 @@
 import type { Metadata, Viewport } from "next";
-import { Cormorant_Garamond, Inter } from "next/font/google";
+import { Outfit, Playfair_Display } from "next/font/google";
 
 import { site } from "@/config/site";
 import "@/styles/globals.css";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
-const cormorant = Cormorant_Garamond({
+const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit", display: "swap" });
+// Serif italic used only for accent words in headlines.
+const playfair = Playfair_Display({
   subsets: ["latin"],
-  weight: ["500", "600", "700"],
-  style: ["normal", "italic"],
-  variable: "--font-cormorant",
+  weight: ["600", "700"],
+  style: ["italic"],
+  variable: "--font-playfair",
   display: "swap",
 });
 
@@ -24,11 +25,11 @@ export const metadata: Metadata = {
   openGraph: { siteName: site.name, type: "website", images: ["/images/illustrations/luke-8-3.jpg"] },
 };
 
-export const viewport: Viewport = { themeColor: "#1e1e7a" };
+export const viewport: Viewport = { themeColor: "#14145a" };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en-GB" className={`${inter.variable} ${cormorant.variable}`}>
+    <html lang="en-GB" className={`${outfit.variable} ${playfair.variable}`}>
       <body>{children}</body>
     </html>
   );

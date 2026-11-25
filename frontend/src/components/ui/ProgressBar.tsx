@@ -17,10 +17,13 @@ export function ProgressBar({
       aria-valuemax={100}
       aria-valuenow={percent}
       aria-label={label}
-      className={clsx("w-full overflow-hidden rounded-full bg-brand-100", size === "sm" ? "h-2" : "h-3")}
+      className={clsx("w-full overflow-hidden rounded-full bg-surface ring-1 ring-line", size === "sm" ? "h-2" : "h-3")}
     >
       <div
-        className={clsx("h-full rounded-full transition-[width] duration-700", funded ? "bg-gold" : "bg-aqua")}
+        className={clsx(
+          "h-full rounded-full transition-[width] duration-700",
+          funded ? "bg-gold" : "bg-gradient-to-r from-brand to-aqua",
+        )}
         style={{ width: `${Math.min(100, Math.max(percent, percent > 0 ? 3 : 0))}%` }}
       />
     </div>

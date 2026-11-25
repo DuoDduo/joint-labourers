@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import { GiveForm } from "@/components/give/GiveForm";
 import { ScriptureCard } from "@/components/illustrations/ScriptureCard";
+import { PageIntro, TopPanel } from "@/components/layout/TopPanel";
 import { illustration } from "@/config/illustrations";
 import { apiGet } from "@/lib/api/client";
 
@@ -19,13 +20,15 @@ export default async function GivePage({ searchParams }: { searchParams: Promise
   const breakdown = await apiGet<Breakdown>("/content/give.money_breakdown", { revalidate: 3600 }).catch(() => null);
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-12">
+    <>
+    <TopPanel>
+      <PageIntro eyebrow="Give" title={needCode ? `Give toward ${needCode}` : "Give to the labourers"}>
+        <p>Your gift reaches labourers who serve without a salary. Give once, or partner every month.</p>
+      </PageIntro>
+    </TopPanel>
+    <div className="wrap py-12">
       <div className="grid gap-12 lg:grid-cols-[1fr_380px]">
         <div className="space-y-6">
-          <h1 className="text-5xl font-semibold">Give</h1>
-          <p className="max-w-2xl text-lg">
-            Your gift reaches labourers who serve without a salary. Give once, or partner every month.
-          </p>
           <GiveForm needCode={needCode} needAmountMinor={amount} />
         </div>
 
@@ -53,5 +56,6 @@ export default async function GivePage({ searchParams }: { searchParams: Promise
         </aside>
       </div>
     </div>
+    </>
   );
 }
