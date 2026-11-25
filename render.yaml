@@ -1,0 +1,57 @@
+# Render blueprint: STAGING backend (API + PostgreSQL + Redis).
+# Create from the Render dashboard: New → Blueprint → pick this repo. Accounts must be in JLICI's name.
+# Plans are the smallest paid tiers (free Postgres is deleted after 30 days); adjust in the dashboard.
+
+databases:
+  - name: jlici-db-staging
+    plan: basic-256mb
+    postgresMajorVersion: "16"
+    databaseName: jlici
+    user: jlici
+
+services:
+  - type: keyvalue
+    name: jlici-redis-staging
+    plan: free
+    ipAllowList: []  # private network only
+
+  - type: web
+    name: jlici-api-staging
+    runtime: docker
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    plan: starter
+    region: frankfurt
+    healthCheckPath: /api/v1/health
+    autoDeploy: true
+    branch: develop
+    envVars:
+      - key: APP_ENV
+        value: staging
+      - key: DATABASE_URL          # postgres://… is converted to postgresql+asyncpg:// by the app
+        fromDatabase:
+          name: jlici-db-staging
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: jlici-redis-staging
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: FIELD_ENCRYPTION_KEY
+        generateValue: true
+      - key: REVALIDATE_SECRET
+        sync: false                # same value as the frontend's REVALIDATE_SECRET
+      - key: FRONTEND_URL
+        value: https://staging.jointlabourers.org
+      - key: CORS_ORIGINS
+        value: '["https://staging.jointlabourers.org"]'
+      - key: COOKIE_SECURE
+        value: "true"
+      - key: COOKIE_DOMAIN
+        value: .jointlabourers.org
+      - key: SEED_ADMIN_EMAIL
+        sync: false
+      - key: SEED_ADMIN_PASSWORD
+        sync: false

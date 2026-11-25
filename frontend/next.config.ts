@@ -3,6 +3,12 @@ import type { NextConfig } from "next";
 // Staging/preview builds set NEXT_PUBLIC_NOINDEX=true. Production must not (CI guard).
 const noindex = process.env.NEXT_PUBLIC_NOINDEX === "true";
 
+// The old site was invisible on Google because of a leftover noindex tag. Never again:
+// a production deploy with noindex switched on fails the build.
+if (noindex && process.env.VERCEL_ENV === "production") {
+  throw new Error("NEXT_PUBLIC_NOINDEX=true is not allowed in production. Remove it from the production env.");
+}
+
 const config: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,

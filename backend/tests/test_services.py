@@ -15,6 +15,35 @@ from app.services.need_states import (
 from app.services.prayer_time import active_hub, local_to_utc_slot, next_handover
 
 
+# ── settings ─────────────────────────────────────────────────────────────────
+def test_host_postgres_urls_get_the_async_driver() -> None:
+    from app.core.config import Settings
+
+    assert Settings(database_url="postgres://u:p@h:5432/db").database_url == (
+        "postgresql+asyncpg://u:p@h:5432/db"
+    )
+    assert Settings(database_url="postgresql://u:p@h/db").database_url.startswith(
+        "postgresql+asyncpg://"
+    )
+
+
+def test_production_refuses_dev_secrets_and_sqlite() -> None:
+    from pydantic import ValidationError
+
+    from app.core.config import Settings
+
+    with pytest.raises(ValidationError):
+        Settings(app_env="production", database_url="postgres://u:p@h/db")
+    with pytest.raises(ValidationError):
+        Settings(
+            app_env="staging",
+            jwt_secret="x" * 40,
+            field_encryption_key="y" * 40,
+            revalidate_secret="z" * 40,
+            database_url="sqlite+aiosqlite:///./x.db",
+        )
+
+
 # ── money ────────────────────────────────────────────────────────────────────
 def test_to_minor_rounds_half_up() -> None:
     assert to_minor("10.005", Currency.USD) == 1001

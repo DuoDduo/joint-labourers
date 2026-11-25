@@ -1,0 +1,85 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - run: uv python install 3.12
+      - run: uv sync --frozen
+      - name: Lint
+        run: uv run ruff check app tests
+      - name: Format
+        run: uv run ruff format --check app tests
+      - name: Tests
+        run: uv run pytest -q
+
+  migrations:
+    # Runs the Alembic migrations against a real PostgreSQL, like staging/production.
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: jlici
+          POSTGRES_PASSWORD: jlici
+          POSTGRES_DB: jlici
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U jlici" --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql+asyncpg://jlici:jlici@localhost:5432/jlici
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv python install 3.12
+      - run: uv sync --frozen
+      - name: Upgrade to head
+        run: uv run alembic upgrade head
+      - name: No model changes missing a migration
+        run: uv run alembic check
+      - name: Downgrade and upgrade again
+        run: uv run alembic downgrade base && uv run alembic upgrade head
+      - name: Seed (reference + sample data)
+        run: uv run python -m app.seed --demo
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    env:
+      NEXT_PUBLIC_NOINDEX: "true"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - name: Typecheck
+        run: pnpm typecheck
+      - name: Build
+        run: pnpm build

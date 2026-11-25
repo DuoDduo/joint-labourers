@@ -2,7 +2,7 @@
 
 from functools import lru_cache
 
-from pydantic import model_validator
+from pydantic import field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 _DEV_SECRET = "dev-only-change-me"  # noqa: S105
@@ -36,6 +36,15 @@ class Settings(BaseSettings):
     @property
     def is_production(self) -> bool:
         return self.app_env == "production"
+
+    @field_validator("database_url")
+    @classmethod
+    def _async_driver(cls, url: str) -> str:
+        """Hosts (Render, Heroku-style) hand out postgres:// URLs; we need the asyncpg driver."""
+        for prefix in ("postgres://", "postgresql://"):
+            if url.startswith(prefix):
+                return "postgresql+asyncpg://" + url[len(prefix) :]
+        return url
 
     @model_validator(mode="after")
     def _guard_production(self) -> "Settings":
