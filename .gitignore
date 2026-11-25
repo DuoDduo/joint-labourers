@@ -24,3 +24,10 @@ __pycache__/
 # Next.js
 next-env.d.ts
 *.tsbuildinfo
+# Client and project-management docs: kept locally, never published
+/docs/01-PRD.md
+/docs/08-roadmap.md
+/docs/11-open-questions.md
+/docs/12-decision-log.md
+/docs/13-sprint-1-report.md
+/docs/wireframes/
